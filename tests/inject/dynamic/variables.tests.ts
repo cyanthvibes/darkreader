@@ -1172,4 +1172,44 @@ describe('CSS VARIABLES OVERRIDE', () => {
         await timeout(0);
         expect(getComputedStyle(document.querySelector('h1')).color).toBe('rgb(255, 26, 26)');
     });
+
+    it('should modify the caret-color property', async () => {
+        container.innerHTML = multiline(
+            '<style>',
+            '    * {',
+            '        --caret-color: green;',
+            '    }',
+            '    h1 {',
+            '        caret-color: var(--caret-color);',
+            '    }',
+            '</style>',
+            '<h1>Caret Color</h1>',
+        );
+        createOrUpdateDynamicTheme(theme, null, false);
+
+        await timeout(0);
+        const elementStyle = getComputedStyle(container.querySelector('h1'));
+
+        expect(elementStyle.caretColor).toBe('rgb(140, 255, 140)');
+    });
+
+    it('should modify the box-shadow actual color values in a variable', async () => {
+        container.innerHTML = multiline(
+            '<style>',
+            '    h1 {',
+            '        --offset: 8px;',
+            '    }',
+            '    h1 {',
+            '        box-shadow: calc(var(--offset)*-1 - 1px) 0 0 0 #fff',
+            '    }',
+            '</style>',
+            '<h1>COmplicated shit :(</h1>',
+        );
+        createOrUpdateDynamicTheme(theme, null, false);
+
+        await timeout(0);
+        const elementStyle = getComputedStyle(container.querySelector('h1'));
+
+        expect(elementStyle.boxShadow).toBe('rgb(0, 0, 0) -9px 0px 0px 0px');
+    });
 });

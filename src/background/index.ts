@@ -3,10 +3,15 @@ import {getHelpURL, UNINSTALL_URL} from '../utils/links';
 import {canInjectScript} from '../background/utils/extension-api';
 import type {Message} from '../definitions';
 import {MessageType} from '../utils/message';
+import {makeChromiumHappy} from './make-chromium-happy';
 
 // Initialize extension
 const extension = new Extension();
 extension.start();
+if (chrome.commands) {
+    // Firefox Android does not support chrome.commands
+    chrome.commands.onCommand.addListener(async (command) => extension.onCommand(command));
+}
 
 const welcome = `  /''''\\
  (0)==(0)
@@ -14,6 +19,7 @@ const welcome = `  /''''\\
 Welcome to Dark Reader!`;
 console.log(welcome);
 
+declare const __DEBUG__: boolean;
 declare const __WATCH__: boolean;
 declare const __PORT__: number;
 const WATCH = __WATCH__;
@@ -67,7 +73,7 @@ if (WATCH) {
         };
     };
     listen();
-} else {
+} else if (!__DEBUG__){
     chrome.runtime.onInstalled.addListener(({reason}) => {
         if (reason === 'install') {
             chrome.tabs.create({url: getHelpURL()});
@@ -76,3 +82,5 @@ if (WATCH) {
 
     chrome.runtime.setUninstallURL(UNINSTALL_URL);
 }
+
+makeChromiumHappy();
